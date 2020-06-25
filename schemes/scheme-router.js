@@ -4,6 +4,7 @@ const Schemes = require("./scheme-model.js");
 
 const router = express.Router();
 
+// gets master list of schemes (without steps)
 router.get("/", (req, res) => {
   Schemes.find()
     .then((schemes) => {
@@ -14,6 +15,7 @@ router.get("/", (req, res) => {
     });
 });
 
+//gets a single scheme
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   Schemes.findById(id)
@@ -31,6 +33,7 @@ router.get("/:id", (req, res) => {
     });
 });
 
+// gets all steps for a given scheme, ordered correctly
 router.get("/:id/steps", (req, res) => {
   const { id } = req.params;
   Schemes.findSteps(id)
@@ -48,6 +51,7 @@ router.get("/:id/steps", (req, res) => {
     });
 });
 
+// adds a new scheme
 router.post("/", (req, res) => {
   const schemeData = req.body;
   Schemes.add(schemeData)
@@ -59,26 +63,7 @@ router.post("/", (req, res) => {
     });
 });
 
-router.post("/:id/steps", (req, res) => {
-  const stepData = req.body;
-  const { id } = req.params;
-  Schemes.findById(id)
-    .then((scheme) => {
-      if (scheme) {
-        Schemes.addStep(stepData, id).then((step) => {
-          res.status(201).json(step);
-        });
-      } else {
-        res
-          .status(404)
-          .json({ message: "Could not find scheme with given id." });
-      }
-    })
-    .catch((err) => {
-      res.status(500).json({ message: "Failed to create new step" });
-    });
-});
-
+// updates a given scheme
 router.put("/:id", (req, res) => {
   const { id } = req.params;
   const changes = req.body;
@@ -99,6 +84,7 @@ router.put("/:id", (req, res) => {
     });
 });
 
+//  removes a given scheme and all associated steps
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
   Schemes.remove(id)
@@ -113,6 +99,28 @@ router.delete("/:id", (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({ message: "Failed to delete scheme" });
+    });
+});
+
+// STRETCH GOAL................................................
+// Inserts the new step into the database, correctly linking it to the intended scheme.
+router.post("/:id/steps", (req, res) => {
+  const stepData = req.body;
+  const { id } = req.params;
+  Schemes.findById(id)
+    .then((scheme) => {
+      if (scheme) {
+        Schemes.addStep(stepData, id).then((step) => {
+          res.status(201).json(step);
+        });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Could not find scheme with given id." });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ message: "Failed to create new step" });
     });
 });
 
